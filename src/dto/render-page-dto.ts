@@ -4,6 +4,9 @@ import { CommentDto } from "./comment-dto";
 
 export interface RenderPageDto {
     title: string;
+    text?: string;
+    date?: Date;
+    filenames?: object[];
     user?: UserDto;
     users?: UserDto[];
     posts?: PostDto[];

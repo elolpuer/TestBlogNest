@@ -3,20 +3,17 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm'
 @Entity('posts')
 export class Post{
     @PrimaryGeneratedColumn({type: "integer"})
-    id: string
+    ID: number
 
     @Column({type: "integer"})
-    user_id: string
-
-    @Column()
-    username: string
+    userID: number
 
     @Column({type: "text"})
     text: string
 
-    @Column({type: "time"})
-    time: Date
-
-    @Column({type: "date"})
+    @Column()
     date: Date
+
+    @Column()
+    filenames: string
 }

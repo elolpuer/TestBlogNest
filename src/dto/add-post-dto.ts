@@ -1,5 +1,5 @@
 export interface AddPostDto {
-    text: string
-    user_id?: string
-    username?: string
+    userID: string;
+    text: string;
+    filenames: string;
 }

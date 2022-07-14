@@ -1,0 +1,14 @@
+<div>
+    <p>{{text}}</p>
+    <p><time>{{date}}</time></p>
+    {{#each filenames}}
+        <p>
+            <img src="/{{hash}}">
+        </p>
+        <p>
+            <video autoplay>
+                <source src="/{{hash}}" type="video/mp4">
+            </video>
+        </p>
+    {{/each}}
+</div>

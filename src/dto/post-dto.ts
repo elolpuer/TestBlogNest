@@ -1,8 +1,7 @@
 export interface PostDto {
-    id: string;
-    user_id: string;
-    username: string;
+    ID: string;
+    userID: number;
     text: string;
-    time: Date;
     date: Date;
+    filenames: string;
 }
