@@ -7,10 +7,10 @@ export interface RenderPageDto {
     text?: string;
     date?: Date;
     filenames?: object[];
+    post?: PostDto;
+    posts?: PostDto[];
     user?: UserDto;
     users?: UserDto[];
-    posts?: PostDto[];
-    post?: PostDto;
     username?: string;
     allPosts?: boolean;
     comments?: CommentDto[]

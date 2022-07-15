@@ -1,7 +1,13 @@
 <div>
-    <p>{{text}}</p>
-    <p><time>{{date}}</time></p>
-    {{#each filenames}}
+    <p>{{post.text}}</p>
+    <p><time>{{post.date}}</time></p>
+    <form method="post" action="./{{post.ID}}/delete">
+        <button type="submit">Delete</button>
+    </form>
+    <form method="get" action="./{{post.ID}}/update">
+        <button type="submit">Update</button>
+    </form>
+    {{#each post.filenames}}
         {{#if video}}
             <p>
                 <video width="450px" height="450px" autoplay>

@@ -1,0 +1,26 @@
+<div>
+    <form method="post" action="./update" enctype="multipart/form-data">
+        <input class="form-control form-control-lg" value="{{post.text}}" type="text" placeholder="Post" name="text" required>
+    {{#each post.filenames}}
+        {{#if video}}
+            <input type="checkbox" id="{{filename}}" name="{{@index}}" value="{{filename}}">
+            <label for="{{filename}}">
+                Delete
+                <video width="450px" height="450px" autoplay>
+                    <source src="/{{filename}}" type="video/mp4">
+                </video>
+            </label><br>
+        {{else}}
+            <input type="checkbox" id="{{filename}}" name="{{@index}}" value="{{filename}}">
+            <label for="{{filename}}">
+                Delete
+                <img src="/{{filename}}" width="300px" height="300px">
+            </label><br>
+        {{/if}}
+    {{/each}}
+    <input type="file" multiple="multiple" name="files" accept=".jpg,.png,.mp4,.webm">
+    <p>
+        <button type="submit" class="btn btn-dark">Update</button> 
+    </p>
+    </form>
+</div>

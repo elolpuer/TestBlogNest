@@ -19,4 +19,9 @@ export class UsersService {
     return user;
   }
 
+  async findOneByID(ID: number): Promise<UserDto> {
+    const user = await this.userRepository.findOneBy({ID});
+    return user;
+  }
+
 }
