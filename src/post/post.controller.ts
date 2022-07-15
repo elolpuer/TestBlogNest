@@ -9,8 +9,7 @@ import { PostService } from './post.service';
 @Controller('post')
 export class PostController {
     constructor(
-        private readonly postService: PostService,
-        private readonly userService: UsersService
+        private readonly postService: PostService
     ){}
 
     @Get('add')
@@ -31,13 +30,6 @@ export class PostController {
     @Render('posts')
     async getAll(@Param('userID') params: number): Promise<RenderPageDto>  {
         const posts = await this.postService.getAll(params)
-        const postsWithUser = 
-            posts
-            .map(async (p) =>{
-                const user = await this.userService.findOneByID(p.userID)
-                p.username = user.username
-                return p
-            })
         return { title: "Posts", posts }
     }
 

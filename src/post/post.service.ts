@@ -3,13 +3,15 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { AddPostDto } from 'src/dto/add-post-dto';
 import { PostDto } from 'src/dto/post-dto';
 import { Post } from 'src/entities/post.entity';
+import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 
 @Injectable()
 export class PostService {
     constructor(
         @InjectRepository(Post)
-        private postRepository: Repository<Post>
+        private postRepository: Repository<Post>,
+        private readonly userService: UsersService
       ) {}
 
     async add(userID: number, text: string, filenames: string) {
@@ -38,15 +40,17 @@ export class PostService {
         if (posts.length === 0) {
             return []
         } else {
-            const postsToSend =
-                posts.map((p) => {
-                    return {
+            let postsToSend: PostDto[] = []
+                posts.forEach(async (p) => {
+                    const user = await this.userService.findOneByID(p.userID)
+                    postsToSend.push({
                         ID: p.ID,
                         userID: p.userID,
+                        username: user.username,
                         text: p.text,
                         date: p.date,
                         filenames: []
-                    }
+                    })
                 })
             return postsToSend;
         }

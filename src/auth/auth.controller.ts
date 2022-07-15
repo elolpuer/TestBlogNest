@@ -1,11 +1,12 @@
-import { Body, Controller, Get, Post, Render, Req, Request, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Render, Request, Req, Res, UseGuards } from '@nestjs/common';
 import { RenderPageDto } from 'src/dto/render-page-dto';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CreateUserDto } from "../dto/create-user-dto"
 import { LoginUserDto } from "../dto/login-user-dto"
-import { Response } from 'express';
+import { Response, Request as RequestType } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -18,14 +19,18 @@ export class AuthController {
     }
 
     @Post('signin')
-    async signin(@Body() user: LoginUserDto, @Res() res: Response, @Req() req: Request) {
-        console.log(await this.authService.signin(user))
-        return await this.authService.signin(user);
+    async signin(@Body() user: LoginUserDto, @Res() res: Response, @Req() req: RequestType) {
+        const token = await this.authService.signin(user)
+        console.log(`Bearer ${token.access_token}`)
+        res.cookie('token', token.access_token)
+        res.redirect("/auth/profile")
     }
 
-    // @UseGuards(JwtAuthGuard)
+    @UseGuards(AuthGuard('jwt'))
     @Get('profile')
-    getProfile(@Request() req) {
+    getProfile(@Headers("Authorization") token: string, @Request() req) {
+        console.log(req.cookies)
+        // console.log(req.headers)
         return req.user;
     }
 
