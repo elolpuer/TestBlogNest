@@ -18,6 +18,7 @@ export class PostController {
     async addPost(@UploadedFiles() files: Array<Express.Multer.File>, @Body() body) {
         const filenames = await this.postService.createFilenamesString(files)
         await this.postService.add(1, body.text, filenames)
+        console.log(filenames)
         console.log("Ok")
     }
 
@@ -25,8 +26,7 @@ export class PostController {
     @Render('post')
     async getPost(@Param('id') params: number): Promise<RenderPageDto> {
         const post = await this.postService.getOne(params)
-        const filenames = post.filenames.split(",").map((v) => {return {hash: v}})
-        return {title: "Post", text: post.text, date: post.date, filenames}
+        return {title: "Post", text: post.text, date: post.date, filenames: post.filenames}
     }
 
 }

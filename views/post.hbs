@@ -2,13 +2,16 @@
     <p>{{text}}</p>
     <p><time>{{date}}</time></p>
     {{#each filenames}}
-        <p>
-            <img src="/{{hash}}">
-        </p>
-        <p>
-            <video autoplay>
-                <source src="/{{hash}}" type="video/mp4">
-            </video>
-        </p>
+        {{#if video}}
+            <p>
+                <video width="450px" height="450px" autoplay>
+                    <source src="/{{filename}}" type="video/mp4">
+                </video>
+            </p>
+        {{else}}
+            <p>
+                <img src="/{{filename}}" width="300px" height="300px">
+            </p>
+        {{/if}}
     {{/each}}
 </div>

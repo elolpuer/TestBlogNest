@@ -22,13 +22,31 @@ export class PostService {
         await this.postRepository.save(newPost)
     }
 
-    async getOne(ID: number): Promise<Post> {
-        return await this.postRepository.findOneBy({ID})
+    async getOne(ID: number): Promise<PostDto> {
+        const post = await this.postRepository.findOneBy({ID})
+        const filenames = 
+            post.filenames.split("},")
+            .map((v, i, arr) => {
+                if (i != arr.length - 1) {
+                    v = v.concat("}")
+                }
+                return JSON.parse(v)
+            })
+            .map((v) => {
+                if (v.mimetype.includes("video")) {
+                    v.video = true
+                } else {
+                    v.video = false
+                }
+                return v;
+            })
+        return {ID: post.ID, userID: post.userID, text: post.text, date: post.date, filenames};
     }
+
 
     async createFilenamesString(files: Array<Express.Multer.File>): Promise<string> {
         const filenames = files.map((v) => {
-            return v.filename;
+            return JSON.stringify({"filename": v.filename, "mimetype": v.mimetype});
         })
         return filenames.toString()
     }
