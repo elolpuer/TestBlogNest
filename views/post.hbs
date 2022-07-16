@@ -1,12 +1,14 @@
 <div>
     <p>{{post.text}}</p>
     <p><time>{{post.date}}</time></p>
-    <form method="post" action="./{{post.ID}}/delete">
+    {{#if usersPost}}
+    <form method="post" action="./{{post.ID}}/delete" class="btn btn-danger">
         <button type="submit">Delete</button>
     </form>
-    <form method="get" action="./{{post.ID}}/update">
+    <form method="get" action="./{{post.ID}}/update" class="btn btn-success">
         <button type="submit">Update</button>
     </form>
+    {{/if}}
     {{#each post.filenames}}
         {{#if video}}
             <p>

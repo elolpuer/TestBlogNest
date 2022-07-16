@@ -26,13 +26,17 @@ export class AuthService {
   //   }
   //   return null;
   // }
+  async payload(token: string): Promise<any> {
+    return this.jwtService.decode(token)
+  }
 
   async signin(user: LoginUserDto) {
     const findedUser = await this.usersService.findOne(user.email);
     const payload = { email: findedUser.email };
-    console.log(payload)
     return {
       access_token: this.jwtService.sign(payload),
+      username: findedUser.username,
+      userID: findedUser.ID,
     };
   }
 

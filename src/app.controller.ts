@@ -7,9 +7,5 @@ import { RenderPageDto } from './dto/render-page-dto';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @Get()
-  @Render('index')
-  getHello(@Req() req: Request): RenderPageDto {
-    return {title: 'Index'};
-  }
+  
 }

@@ -10,6 +10,7 @@ export interface RenderPageDto {
     post?: PostDto;
     posts?: PostDto[];
     user?: UserDto;
+    usersPost?: boolean;
     users?: UserDto[];
     username?: string;
     allPosts?: boolean;

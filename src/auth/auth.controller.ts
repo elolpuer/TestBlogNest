@@ -21,17 +21,11 @@ export class AuthController {
     @Post('signin')
     async signin(@Body() user: LoginUserDto, @Res() res: Response, @Req() req: RequestType) {
         const token = await this.authService.signin(user)
-        console.log(`Bearer ${token.access_token}`)
         res.cookie('token', token.access_token)
-        res.redirect("/auth/profile")
-    }
-
-    @UseGuards(AuthGuard('jwt'))
-    @Get('profile')
-    getProfile(@Headers("Authorization") token: string, @Request() req) {
-        console.log(req.cookies)
-        // console.log(req.headers)
-        return req.user;
+        res.cookie('email', user.email)
+        res.cookie('username', token.username)
+        res.cookie('id', token.userID)
+        res.redirect("/post/all")
     }
 
     @Get('signup')
@@ -44,6 +38,15 @@ export class AuthController {
     async signup(@Body() newUser: CreateUserDto, @Res() res: Response, @Req() req: Request): Promise<any> {
        await this.authService.signup(
         newUser
-       ).then(()=>{res.redirect("/")})
+       ).then(()=>{res.redirect("/auth/signin")})
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @Post('logout')
+    async logout(@Req() req: RequestType, @Res() res: Response): Promise<any> {
+        res.clearCookie('token')
+        res.clearCookie('email')
+        res.status(200).redirect('/post/all')
+        
     }
 }

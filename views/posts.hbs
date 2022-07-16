@@ -1,12 +1,19 @@
-{{#each posts}}
+<div>
+    {{#if posts}}
+        {{#each posts}}
 
-    <a href="./user/{{userID}}/{{ID}}" class="post_ssilka">
-        <div>
-            <p>Username: {{username}}</p>
-            <p>Text: {{text}}</p>
-            <p><time>{{date}}</time></p>
-        </div>
-    </a>
-    <hr size="100" width="100%" color="black">  
+            <a href="./user/{{userID}}/{{ID}}" class="post_ssilka">
+                <div class="justify-content-center">
+                    <p>Username: {{username}}</p>
+                    <p>Text: {{text}}</p>
+                    <p><time>{{date}}</time></p>
+                </div>
+            </a>
+            <hr size="100" width="100%" color="black">  
 
-{{/each}}
+        {{/each}}
+    {{else}}
+        <h3>Posts database is empty</h3>
+    {{/if}}
+    
+</div>
