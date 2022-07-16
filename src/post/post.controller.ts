@@ -20,7 +20,8 @@ export class PostController {
     @Get('add')
     @Render('add')
     @ApiResponse({ status: 200, description: "Page", type: RenderPageDto})
-    async signinPage(@Req() req: Request) : Promise<RenderPageDto> {
+    @ApiResponse({ status: 401, description: "Unauthorized"})
+    async addPage(@Req() req: Request) : Promise<RenderPageDto> {
         return { 
             title: 'Add', 
             user: {username: req.cookies.username}
@@ -32,6 +33,7 @@ export class PostController {
     @UseInterceptors(FilesInterceptor("files"))
     @ApiBody({type: PostDto})
     @ApiResponse({ status: 200, description: "Page", type: RenderPageDto})
+    @ApiResponse({ status: 401, description: "Unauthorized"})
     async add(@UploadedFiles() files: Array<Express.Multer.File>, @Body() body: PostDto, @Req() req: Request, @Res() res: Response) {
         //из полученых файлов делаем строку
         const filenames = await this.postService.createFilenamesString(files)
@@ -85,8 +87,10 @@ export class PostController {
     @ApiParam({name: 'userID', type: Number})
     @ApiParam({name: 'id', type: Number})
     @ApiResponse({ status: 200, description: "Page", type: RenderPageDto})
+    @ApiResponse({ status: 400, description: "You are not post owner"})
+    @ApiResponse({ status: 401, description: "Unauthorized"})
     async delete(@Param('id') ID: number, @Req() req: Request,@Res() res: Response) {
-        await this.postService.delete(req.cookies.id, ID)
+        await this.postService.delete(req.cookies.id, ID, res)
         res.status(200).redirect(`/post/all`)
     }
 
@@ -96,9 +100,15 @@ export class PostController {
     @ApiParam({name: 'userID', type: Number})
     @ApiParam({name: 'id', type: Number})
     @ApiResponse({ status: 200, description: "Page", type: RenderPageDto})
-    async updateGet(@Param('userID') userID: number, @Param('id') ID: number, @Req() req: Request): Promise<RenderPageDto> {
+    @ApiResponse({ status: 400, description: "Your not post owner"})
+    @ApiResponse({ status: 401, description: "Unauthorized"})
+    async updateGet(@Param('userID') userID: number, @Param('id') ID: number, @Req() req: Request,@Res() res: Response): Promise<RenderPageDto> {
         const post = await this.postService.getOne(ID)
-        return {title: "Update", post, user: {username: req.cookies.username}}
+        if (post.userID != req.cookies.id) {
+            res.status(400).json({message: "You are not post owner"})
+        } else {
+            return {title: "Update", post, user: {username: req.cookies.username}}
+        }
     }
     
     @UseGuards(JwtAuthGuard)
@@ -108,6 +118,8 @@ export class PostController {
     @ApiParam({name: 'id', type: Number})
     @ApiBody({type: PostDto})
     @ApiResponse({ status: 200, description: "Page", type: RenderPageDto})
+    @ApiResponse({ status: 400, description: "You are not post owner"})
+    @ApiResponse({ status: 401, description: "Unauthorized"})
     async update(
         @UploadedFiles() files: Array<Express.Multer.File>, 
         @Param('userID') userID: number, 
@@ -128,7 +140,8 @@ export class PostController {
             ID,
             body.text,
             filesToDelete,
-            files
+            files,
+            res
         )
         res.status(200).redirect(`/post/user/${userID}/${ID}`)
     }

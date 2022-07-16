@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Response } from 'express';
 import { PostDto } from 'src/dto/dto';
 import { Post } from 'src/entities/entities';
 import { UsersService } from 'src/users/users.service';
@@ -65,59 +66,77 @@ export class PostService {
         return postsToSend;
     }
 
-    async delete(userID: number, ID: number) {
-        await this.postRepository.delete({ID, userID})
+    async delete(userID: number, ID: number, res: Response) {
+        const post = await this.postRepository.findOneBy({ID})
+        if (post.userID != userID) {
+            res.status(400).json({message: "You are not post owner"})
+        } else {
+            await this.postRepository.delete({ID, userID})
+        }
     }
 
-    async update(userID: number, ID: number, text: string, filesToDelete: string[], filesToAdd: Array<Express.Multer.File>) {
+    async update(
+        userID: number, 
+        ID: number, 
+        text: string, 
+        filesToDelete: string[], 
+        filesToAdd: Array<Express.Multer.File>,
+        res: Response
+    ) {
         //берем наш старый пост
         const previousPost = await this.getOne(ID)
-        //удаляем файлы
+        if (previousPost.userID != userID) {
+            res.status(400).json({message: "You are not post owner"})
+        }
+        else {
+            //удаляем файлы
         previousPost.filenames = 
-            previousPost.filenames
-            //фильтрыем по принципу есть ли название файла в файлах для удаления
-            .filter((v) => {
-                for(let i = 0; i<filesToDelete.length;i++) {
-                    if (v.filename == filesToDelete[i]){
-                        return false
-                    }
+        previousPost.filenames
+        //фильтрыем по принципу есть ли название файла в файлах для удаления
+        .filter((v) => {
+            for(let i = 0; i<filesToDelete.length;i++) {
+                if (v.filename == filesToDelete[i]){
+                    return false
                 }
-                return true;
-            })
-            //делаем обьект
-            .map(v => {
-                return {
-                    filename: v.filename,
-                    mimetype: v.mimetype
-                }
-            })
-        //добавляем новые файлы, если есть
-        filesToAdd.forEach(v => {
-            previousPost.filenames.push(
-                {
-                    filename: v.filename,
-                    mimetype: v.mimetype
-                }
-            )
+            }
+            return true;
         })
-        //делаем строку из файлов
-        const filenames = 
-            previousPost.filenames
-            .map((v) => {
-                return JSON.stringify({"filename": v.filename, "mimetype": v.mimetype});
-            })
-            .toString()
-        //обновляем
-        await this.postRepository
-            .createQueryBuilder()
-            .update(Post)
-            .set({
-                text,
-                filenames
-            })
-            .where("userID = :userID", {userID})
-            .where("ID = :ID", {ID})
-            .execute()
+        //делаем обьект
+        .map(v => {
+            return {
+                filename: v.filename,
+                mimetype: v.mimetype
+            }
+        })
+    //добавляем новые файлы, если есть
+    filesToAdd.forEach(v => {
+        previousPost.filenames.push(
+            {
+                filename: v.filename,
+                mimetype: v.mimetype
+            }
+        )
+    })
+    //делаем строку из файлов
+    const filenames = 
+        previousPost.filenames
+        .map((v) => {
+            return JSON.stringify({"filename": v.filename, "mimetype": v.mimetype});
+        })
+        .toString()
+    //обновляем
+    await this.postRepository
+        .createQueryBuilder()
+        .update(Post)
+        .set({
+            text,
+            filenames
+        })
+        .where("userID = :userID", {userID})
+        .where("ID = :ID", {ID})
+        .execute()
+        }
+        
         
     }
 
