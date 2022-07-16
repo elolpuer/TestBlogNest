@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AddPostDto } from 'src/dto/add-post-dto';
-import { PostDto } from 'src/dto/post-dto';
-import { Post } from 'src/entities/post.entity';
+import { PostDto } from 'src/dto/dto';
+import { Post } from 'src/entities/entities';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
 
@@ -27,6 +26,7 @@ export class PostService {
     async getOne(ID: number): Promise<PostDto> {
         const post = await this.postRepository.findOneBy({ID})
         if (post.filenames.length !== 0) {
+            //делаем json файлы
             const filenames = await this.createJsonFilenames(post.filenames)
             return {ID: post.ID, userID: post.userID, text: post.text, date: post.date, filenames};
         } else {
@@ -35,36 +35,47 @@ export class PostService {
         
     }
 
-    async getAll(userID: number): Promise<PostDto[]> {
-        const posts = await this.postRepository.find()
+    async getAll(): Promise<Post[]> {
+        const posts = 
+            await this.postRepository
+            .createQueryBuilder()
+            .getMany()
         if (posts.length === 0) {
             return []
         } else {
-            let postsToSend: PostDto[] = []
-                posts.forEach(async (p) => {
-                    const user = await this.userService.findOneByID(p.userID)
-                    postsToSend.push({
-                        ID: p.ID,
-                        userID: p.userID,
-                        username: user.username,
-                        text: p.text,
-                        date: p.date,
-                        filenames: []
-                    })
-                })
-            return postsToSend;
+            return posts;
         }
+    }
+
+    //посты приходят без username, а нам надо их добавлять, не хотел использовать join
+    async addUsernameToPosts(posts: Post[]):Promise<PostDto[]> {
+        let postsToSend:PostDto[] = []
+        for (let i = 0; i < posts.length; i++) {
+            const user = await this.userService.findOneByID(posts[i].userID)
+            let post: PostDto = {
+                ID: posts[i].ID,
+                userID: posts[i].userID,
+                username: user.username,
+                text: posts[i].text,
+                date: posts[i].date,
+                filenames: [],
+            }
+            postsToSend[i] = post
+        }
+        return postsToSend;
     }
 
     async delete(userID: number, ID: number) {
         await this.postRepository.delete({ID, userID})
     }
 
-    async update(ID: number, text: string, filesToDelete: string[], filesToAdd: Array<Express.Multer.File>) {
+    async update(userID: number, ID: number, text: string, filesToDelete: string[], filesToAdd: Array<Express.Multer.File>) {
+        //берем наш старый пост
         const previousPost = await this.getOne(ID)
         //удаляем файлы
         previousPost.filenames = 
             previousPost.filenames
+            //фильтрыем по принципу есть ли название файла в файлах для удаления
             .filter((v) => {
                 for(let i = 0; i<filesToDelete.length;i++) {
                     if (v.filename == filesToDelete[i]){
@@ -73,13 +84,14 @@ export class PostService {
                 }
                 return true;
             })
+            //делаем обьект
             .map(v => {
                 return {
                     filename: v.filename,
                     mimetype: v.mimetype
                 }
             })
-        //добавляем файлы
+        //добавляем новые файлы, если есть
         filesToAdd.forEach(v => {
             previousPost.filenames.push(
                 {
@@ -88,7 +100,7 @@ export class PostService {
                 }
             )
         })
-        //делаем строку
+        //делаем строку из файлов
         const filenames = 
             previousPost.filenames
             .map((v) => {
@@ -103,11 +115,14 @@ export class PostService {
                 text,
                 filenames
             })
+            .where("userID = :userID", {userID})
             .where("ID = :ID", {ID})
             .execute()
         
     }
 
+    //делаем строку из файлов
+    //оставляем лишь название и тип
     async createFilenamesString(files: Array<Express.Multer.File>): Promise<string> {
         const filenames = files.map((v) => {
             return JSON.stringify({"filename": v.filename, "mimetype": v.mimetype});
@@ -115,14 +130,20 @@ export class PostService {
         return filenames.toString()
     }
 
+    //делаем json из строки файлов
+    //вставляем название и тип
     async createJsonFilenames(filenames: string): Promise<any> {
         return filenames.split("},")
                 .map((v, i, arr) => {
+                    //если не последний то обрезаем по закрытию скобки
                     if (i != arr.length - 1) {
                         v = v.concat("}")
                     }
                     return JSON.parse(v)
                 })
+                //если тип == видео тогда добавляем это в json
+                //необходимо для просмотра на страницы
+                //разделять картинки и видео в разные теги
                 .map((v) => {
                     if (v.mimetype.includes("video")) {
                         v.video = true

@@ -1,6 +1,7 @@
 <div>
-    <p>{{post.text}}</p>
-    <p><time>{{post.date}}</time></p>
+    <p>Username: {{username}}</p>
+    <p>Text: {{post.text}}</p>
+    <p>Date: <time>{{post.date}}</time></p>
     {{#if usersPost}}
     <form method="post" action="./{{post.ID}}/delete" class="btn btn-danger">
         <button type="submit">Delete</button>

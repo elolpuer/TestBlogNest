@@ -1,13 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserDto } from 'src/dto/user-dto';
-import { CreateUserDto } from 'src/dto/create-user-dto';
-import { LoginUserDto } from "../dto/login-user-dto";
+import { SigninUserDto, CreateUserDto } from "../dto/dto";
 import { Repository } from 'typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/entities/entities';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -18,21 +17,24 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  // async validateUser(username: string, pass: string): Promise<any> {
-  //   const user = await this.usersService.findOne(username);
-  //   if (user && user.password === pass) {
-  //     const { password, ...result } = user;
-  //     return result;
-  //   }
-  //   return null;
-  // }
   async payload(token: string): Promise<any> {
     return this.jwtService.decode(token)
   }
 
-  async signin(user: LoginUserDto) {
+  async signin(user: SigninUserDto, res: Response): Promise<any> {
     const findedUser = await this.usersService.findOne(user.email);
+    if (!findedUser) {
+      return res.status(400).json({message: 'Wrong data'})
+    }
+
+    const isMatch = await bcrypt.compare(user.password, findedUser.password)
+
+    if (!isMatch) {
+      return res.status(400).json({message: 'Wrong data'})
+    }
+
     const payload = { email: findedUser.email };
+    
     return {
       access_token: this.jwtService.sign(payload),
       username: findedUser.username,
@@ -40,14 +42,14 @@ export class AuthService {
     };
   }
 
-  async signup(user: CreateUserDto) {
+  async signup(user: CreateUserDto, res: Response) {
     const checkUser = 
       await this.userRepository.findOneBy({username: user?.username})
       || 
       await this.userRepository.findOneBy({email: user?.email})
-    // if (user) {
-    //     return res.status(400).json({message:'User with this username/email has been created'}) 
-    // }
+    if (checkUser) {
+        return res.status(400).json({message:'User with this username/email has been created'}) 
+    }
     const hash = await bcrypt.hash(user.password, 13)
 
     const newUser = new User

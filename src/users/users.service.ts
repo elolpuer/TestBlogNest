@@ -1,20 +1,18 @@
 import { Injectable } from '@nestjs/common';
-// import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/entities/user.entity';
+import { User } from 'src/entities/entities';
 import { Repository } from 'typeorm';
-import { UserDto } from '../dto/user-dto';
+import { UserDto, SigninUserDto } from '../dto/dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-    // private readonly jwtService: JwtService,
   ) {}
 
 
-  async findOne(email: string): Promise<UserDto> {
+  async findOne(email: string): Promise<SigninUserDto> {
     const user = await this.userRepository.findOneBy({ email });
     return user;
   }

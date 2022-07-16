@@ -1,18 +1,19 @@
-import { UserDto } from "./user-dto";
-import { PostDto } from "./post-dto";
-import { CommentDto } from "./comment-dto";
+import { ApiProperty } from '@nestjs/swagger'
+import { UserDto, PostDto} from './dto';
 
-export interface RenderPageDto {
+export class RenderPageDto {
+    @ApiProperty({required: true})
     title: string;
-    text?: string;
-    date?: Date;
+    @ApiProperty({required: false})
     filenames?: object[];
+    @ApiProperty({required: false, type: PostDto})
     post?: PostDto;
+    @ApiProperty({required: false, type: Array<PostDto>})
     posts?: PostDto[];
+    @ApiProperty({required: false, type: UserDto})
     user?: UserDto;
+    @ApiProperty({required: false})
     usersPost?: boolean;
-    users?: UserDto[];
+    @ApiProperty({required: false})
     username?: string;
-    allPosts?: boolean;
-    comments?: CommentDto[]
 }
