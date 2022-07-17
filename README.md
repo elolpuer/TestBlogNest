@@ -1,8 +1,9 @@
 ## Blog on Nest.js
-<a href="http://194.87.232.104:5000/">Site</a><br>
-<a href="http://194.87.232.104:5000/api">Swagger Documentation</a><br>
+<a href="http://194.87.232.104/">Site</a><br>
+<a href="http://194.87.232.104/api">Swagger Documentation</a><br>
 Database: <a href="https://www.postgresql.org/">PostgreSQL</a><br>
 Platform: <a href="https://nodejs.org/">Node.js</a><br>
+WebServer: <a href="https://nginx.org/">Nginx</a><br>
 Framework: <a href="https://nestjs.com/">Nest.js</a><br>
 Auth: <a href="https://jwt.io/">JWT</a><br>
 ## Installation
